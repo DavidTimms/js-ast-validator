@@ -52,10 +52,18 @@ function valid(name, input) {
 }
 
 function runTest(expected, name, input) {
-	var result = checkAST(input);
+	var result;
+	var msg = "should have failed, but succeeded";
+	try {
+		result = checkAST(input);
+	}
+	catch (e) {
+		msg = e;
+		result = false;
+	}
 	if (result !== expected) {
 		console.log("Test failed: " + name);
-		console.log("	expected " + expected + ", but received " + result);
+		console.log(msg.toString());
 		allPassed = false;
 	}
 }

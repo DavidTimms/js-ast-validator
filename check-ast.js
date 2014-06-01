@@ -27,9 +27,13 @@ function isValue(value) {
 // define a nullable property
 function maybe(specItem) {
 	var checkFunc = handler(specItem);
-	return function (node) {
-		return (node === null) || checkFunc(node);
+	var maubeCheck = function (node) {
+		return (node === null) || (node === undefined) || checkFunc(node);
 	};
+	maubeCheck.toString = function () {
+		return "maybe(" + stringify(specItem) + ")";
+	}
+	return maubeCheck;
 }
 
 // defines a property which can follow one of several specs
@@ -39,11 +43,15 @@ function either(/* ...variadic... */) {
 		options.push(arguments[i]);
 	}
 	var handlers = options.map(handler);
-	return function (node) {
+	var checkFunc = function (node) {
 		return handlers.some(function (checkFunc) {
 			return checkFunc(node);
 		});
 	};
+	checkFunc.toString = function () {
+		return handlers.map(stringify).join(" | ");
+	}
+	return checkFunc;
 }
 
 // tests an AST node against a specification object
@@ -56,9 +64,10 @@ function verify(node, spec) {
 		// throw an error if the node does not 
 		// match the spec for the type
 		if (!handler(spec[key])(node[key])) {
-			throw Error("invalid value for property '" + key + 
-				"' in " + node.type + ". found: " + 
-				((node[key] && pretty(node[key])) || node.key));
+			var e = "Invalid value for property '" + key + "' in " + node.type
+				+ "\n    expected: " + stringify(spec[key])
+				+ "\n    found: " + stringify(node[key]);
+			throw Error(e);
 		}
 	}
 	return true;
@@ -99,6 +108,31 @@ var handler = (function () {
 	};
 })();
 
+function stringify(value) {
+	switch (typeof(value)) {
+		case "string":
+			return '"' + value + '"';
+		case "function":
+			return value.name || value.toString();
+		case "object":
+			if (value === null) {
+				return "null";
+			}
+			if (value instanceof Array) {
+				return "[" + value.map(stringify) + "]";
+			}
+			return value.type || pretty(value);
+		default:
+			return "" + value;
+	}
+}
+
+function always(value) {
+	return function () {
+		return value;
+	}
+}
+
 // Entry point 
 
 function program(node) {
@@ -131,6 +165,8 @@ var statement = either(
 	withStatement,
 	debuggerStatement,
 	labeledStatement);
+
+statement.toString = always("statement");
 
 function emptyStatement(node) {
 	return verify(node, {
@@ -196,7 +232,7 @@ function switchStatement(node) {
 		type: "SwitchStatement",
 		discriminant: expression,
 		cases: [switchCase],
-		lexical: boolean
+		lexical: maybe(boolean)
 	});
 }
 
@@ -328,6 +364,8 @@ var expression = either(
 	updateExpression,
 	newExpression,
 	yieldExpression);
+
+expression.toString = always("expression");
 
 function thisExpression(node) {
 	return verify(node, {
@@ -475,6 +513,8 @@ function yieldExpression(node) {
 // PATTERNS
 
 var pattern = either(identifier, objectPattern, arrayPattern);
+
+pattern.toString = always("pattern");
 
 function objectPattern(node) {
 	return verify(node, {
