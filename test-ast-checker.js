@@ -36,12 +36,14 @@ valid("Test 1", {
 	}]
 });
 
-var source = fs.readFileSync("check-ast.js", "utf8");
-var ast = esprima.parse(source);
+invalid("Test 2", {
+	type: "ExpressionStatement",
+	expression: []
+});
 
-var start = Date.now();
-valid("Own source", ast);
-console.log("time: " + (Date.now() - start) + "ms");
+valid("Own source", parseFile("check-ast.js"));
+
+valid("Sample of everything", parseFile("sample.js"));
 
 function invalid(name, input) {
 	return runTest(false, name, input);
@@ -70,4 +72,9 @@ function runTest(expected, name, input) {
 
 if (allPassed) {
 	console.log("All tests passed");
+}
+
+function parseFile(fileName) {
+	var source = fs.readFileSync(fileName, "utf8");
+	return esprima.parse(source);
 }

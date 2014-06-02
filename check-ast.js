@@ -73,6 +73,7 @@ function verify(node, spec) {
 	return true;
 }
 
+// generate a handler predicate from a spec rule
 var handler = (function () {
 	var typeHandlers = {
 		string: function (str) {
@@ -108,6 +109,7 @@ var handler = (function () {
 	};
 })();
 
+// generate a string representation of a spec rule
 function stringify(value) {
 	switch (typeof(value)) {
 		case "string":
@@ -127,6 +129,7 @@ function stringify(value) {
 	}
 }
 
+// creates a function which always return the same value
 function always(value) {
 	return function () {
 		return value;
@@ -151,8 +154,6 @@ var statement = either(
 	blockStatement,
 	ifStatement,
 	returnStatement,
-	breakStatement,
-	continueStatement,
 	switchStatement,
 	throwStatement,
 	tryStatement,
@@ -161,6 +162,8 @@ var statement = either(
 	forStatement,
 	forInStatement,
 	forOfStatement,
+	breakStatement,
+	continueStatement,
 	emptyStatement, 
 	withStatement,
 	debuggerStatement,
@@ -614,4 +617,21 @@ var updateOperator = either("++", "--");
 
 
 
-module.exports = program;
+module.exports = function (node, nodeType) {
+	nodeType = (nodeType || "program").toLowerCase();
+	var nodeFunc = ({
+		program: program,
+		expression: expression,
+		statement: statement
+	})[nodeType];
+
+	if (!nodeFunc) {
+		throw Error("Unknown node type. Must be one of " +
+			"'expression', 'statement' or 'program'");
+	}
+
+	if (!nodeFunc(node)) {
+		throw Error("Root node in AST is not a valid " + nodeType);
+	}
+	return true;
+}
