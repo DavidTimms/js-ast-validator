@@ -1,0 +1,31 @@
+{
+  "name": "ast-validator",
+  "version": "0.1.0",
+  "description": "Validates a JavaScript AST to ensure that it meets the Mozilla Parser API specification.",
+  "main": "check-ast.js",
+  "dependencies": {
+    "jsonpretty": "~0.0.1"
+  },
+  "devDependencies": {
+    "esprima": "~1.2.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DavidTimms/js-ast-validator.git"
+  },
+  "keywords": [
+    "AST",
+    "validator",
+    "mozilla",
+    "parser",
+    "escodegen"
+  ],
+  "author": "David Timms",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DavidTimms/js-ast-validator/issues"
+  }
+}
