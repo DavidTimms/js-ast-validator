@@ -617,7 +617,7 @@ var updateOperator = either("++", "--");
 
 
 
-module.exports = function (node, nodeType) {
+module.exports = function validateAST(node, nodeType) {
 	nodeType = (nodeType || "program").toLowerCase();
 	var nodeFunc = ({
 		program: program,
